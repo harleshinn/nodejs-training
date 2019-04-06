@@ -28,23 +28,27 @@ const server = http.createServer((request, response) =>{
 
   if (url === '/message' && method === 'POST') {
     const body = [];
-
+    //the data event will be fired WHENEVER A NEW CHUNK IS READY TO BE READ
+    //
     request.on('data', (chunk) => {
       // I can modify de const but not re assing it
       console.log(chunk);
-      body.push();
+      body.push(chunk);
     });
 
-    request.on('end', () => {
+    return request.on('end', () => {
       const parsedBody = Buffer.concat(body).toString();
+      const message = parsedBody.split('=')[1];
+
       console.log(parsedBody);
+
+      fs.writeFileSync('message.txt', message);
+
+      response.statusCode = 302;
+      response.setHeader('Location', '/');
+      return response.end();
     });
 
-    fs.writeFileSync('message.txt', 'DUMMY');
-    response.statusCode = 302;
-    response.setHeader('Location', '/');
-
-    return response.end();
   }
 
   response.setHeader('Content-Type', 'text/html');
